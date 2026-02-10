@@ -9,7 +9,7 @@
 #include <memory>
 
 
-
+//hewo
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -23,12 +23,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     manager = std::make_unique<Manager>(server_ips, 22);
     motor = std::make_unique<Motor_Controller>();
+    connect(manager.get(), &Manager::roverDiscovered,this, &MainWindow::process_queue);
 
-    queueTimer = new QTimer();
-    connect(queueTimer, &QTimer::timeout, this, &MainWindow::process_queue);
-    queueTimer->start(200);
 
-   stackedWidget = new QStackedWidget(this);
+    //queueTimer = new QTimer(this);
+    //connect(queueTimer, &QTimer::timeout, this, &MainWindow::process_queue);
+    //queueTimer->start(200);
+
+    stackedWidget = new QStackedWidget(this);
     setCentralWidget(stackedWidget);
 
     //------------Scan Page------------
@@ -107,24 +109,32 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::on_scanBtn_clicked(){
-    qDebug() << "roll";
+    qDebug() << "scan button clicked";
     currentTime = QTime::currentTime(); //get curr sys time
-    qDebug() << "roll again";
     QString timeString = "Time updated: " + currentTime.toString("hh:mm:ss ap"); //format ap=am pm
-    qDebug() << "roll again2";
     if (timeLabel != nullptr){
         timeLabel->setText(timeString);
     } else {
         qDebug() << "error: timeLabel is null";
     }
-    qDebug() << "roll again3";
     resultsLayout->addWidget(timeLabel);
 
-    qDebug() << "rice";
+    //manager->add_to_queue("192.168.1.50", 123);
 
     start_motor();
 
-    qDebug() << "rice rolled";
+    //motor_running = true;
+    //std::cout << "AUTO MODE STARTED" << std::endl;
+    //std::thread autoThread(&Manager::start_auto_mode, manager);
+    //autoThread.detach();
+     //try{
+    std::thread autoThread(&Manager::start_auto_mode, manager.get());
+    autoThread.detach();
+        //std::cout << "AUTO MODE STARTED" << std::endl;
+        //manager->start_auto_mode();
+   // } catch (const std::exception& e){
+   //     std::cerr<<"Error starting auto mode"<<e.what()<<std::endl;
+   // } 
 
     qDebug() << "current time: "<< timeString;
     qDebug() << "stacked pointer:" << stackedWidget;
@@ -149,7 +159,7 @@ void MainWindow::on_refreshScanBtn_clicked(){
 void MainWindow::on_backBtn_clicked(){
     qDebug() << "Back button clicked";
     qDebug() << "Before back: index =" << stackedWidget->currentIndex();
-    queueTimer->stop();
+    //queueTimer->stop();
     stop_motor();
     stackedWidget->setCurrentIndex(0);
     qDebug() << "After back: index =" << stackedWidget->currentIndex();
@@ -173,6 +183,7 @@ void MainWindow::stop_motor(){
 }
 void MainWindow::process_queue(){
     qDebug() << "steaming rice";
+    qDebug() << "queue empty?" << manager->is_queue_empty();
     while (!manager->is_queue_empty()){
         auto [ip, heading] = manager->get_from_queue();
         QString QIp = QString::fromStdString(ip);
@@ -210,7 +221,8 @@ void MainWindow::target_rover(){
 
 void MainWindow::on_stopBtn_clicked(){
     qDebug() << "Stop button clicked";
-    queueTimer->stop();
+    //queueTimer->stop();
+    manager->stop_auto_mode();
     stop_motor();
 }
 
