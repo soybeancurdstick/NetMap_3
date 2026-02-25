@@ -7,9 +7,10 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <memory>
+#include <vector>
+#include <string>
 
 
-//hewo
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -18,17 +19,16 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setFixedSize(640,460);
-    qDebug() << "Hello World.";
-    std::vector<std::string> server_ips;
+    //qDebug() << "Hello World.";
+    std::vector<std::string> server_ips = {"192.168.2.3"};
 
-    manager = std::make_unique<Manager>(server_ips, 22);
+    manager = std::make_unique<Manager>(server_ips, 8080);
     motor = std::make_unique<Motor_Controller>();
-    connect(manager.get(), &Manager::roverDiscovered,this, &MainWindow::process_queue);
 
-
-    //queueTimer = new QTimer(this);
-    //connect(queueTimer, &QTimer::timeout, this, &MainWindow::process_queue);
-    //queueTimer->start(200);
+    //connect(manager.get(), &Manager::roverDiscovered, this, &MainWindow::process_queue);
+    queueTimer = new QTimer(this);
+    connect(queueTimer, &QTimer::timeout, this, &MainWindow::process_queue);
+    queueTimer->start(200);
 
     stackedWidget = new QStackedWidget(this);
     setCentralWidget(stackedWidget);
@@ -122,19 +122,19 @@ void MainWindow::on_scanBtn_clicked(){
     //manager->add_to_queue("192.168.1.50", 123);
 
     start_motor();
-
+    qDebug() << "start motor and thus auto scan";
     //motor_running = true;
     //std::cout << "AUTO MODE STARTED" << std::endl;
     //std::thread autoThread(&Manager::start_auto_mode, manager);
     //autoThread.detach();
      //try{
-    std::thread autoThread(&Manager::start_auto_mode, manager.get());
-    autoThread.detach();
-        //std::cout << "AUTO MODE STARTED" << std::endl;
-        //manager->start_auto_mode();
-   // } catch (const std::exception& e){
-   //     std::cerr<<"Error starting auto mode"<<e.what()<<std::endl;
-   // } 
+//    std::thread autoThread(&Manager::start_auto_mode, manager.get());
+  //  autoThread.detach();
+   //     std::cout << "AUTO MODE STARTED" << std::endl;
+     //   manager->start_auto_mode();
+    //} catch (const std::exception& e){
+      //  std::cerr<<"Error starting auto mode"<<e.what()<<std::endl;
+    //} 
 
     qDebug() << "current time: "<< timeString;
     qDebug() << "stacked pointer:" << stackedWidget;
@@ -159,7 +159,7 @@ void MainWindow::on_refreshScanBtn_clicked(){
 void MainWindow::on_backBtn_clicked(){
     qDebug() << "Back button clicked";
     qDebug() << "Before back: index =" << stackedWidget->currentIndex();
-    //queueTimer->stop();
+    queueTimer->stop();
     stop_motor();
     stackedWidget->setCurrentIndex(0);
     qDebug() << "After back: index =" << stackedWidget->currentIndex();
@@ -221,8 +221,7 @@ void MainWindow::target_rover(){
 
 void MainWindow::on_stopBtn_clicked(){
     qDebug() << "Stop button clicked";
-    //queueTimer->stop();
-    manager->stop_auto_mode();
+    queueTimer->stop();
     stop_motor();
 }
 
