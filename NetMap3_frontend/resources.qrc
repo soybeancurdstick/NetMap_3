@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>NCPA_crest.png</file>
+    </qresource>
+</RCC>

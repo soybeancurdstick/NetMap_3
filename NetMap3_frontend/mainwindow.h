@@ -8,6 +8,7 @@
 #include <QTableWidget>
 #include <QTime>
 #include <QLabel>
+#include <QPushButton>
 
 #include "manager.hpp"
 #include "motor_controller.hpp"
@@ -43,6 +44,7 @@ private slots:
     //void update_labels();
     void process_queue();
     void target_rover();
+    void on_selection_changed();
 
 private:
     //UI
@@ -58,6 +60,7 @@ private:
 
     QTime currentTime;
     QTimer* queueTimer;
+    QPushButton *targetBtn;
 
     std::unique_ptr<Manager> manager; //smart pointer to backend manager.cpp
     std::unique_ptr<Motor_Controller> motor; //smart pointer to backend motor controller
