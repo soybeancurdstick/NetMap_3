@@ -20,16 +20,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setFixedSize(640,460);
     qDebug() << "hi hi hi updated hi hi hi";
-    //qDebug() << "Hello World.";
     std::vector<std::string> server_ips = {"192.168.2.3"};
 
     manager = std::make_unique<Manager>(server_ips, 8080);
     motor = std::make_unique<Motor_Controller>();
 
-    //connect(manager.get(), &Manager::roverDiscovered, this, &MainWindow::process_queue);
     queueTimer = new QTimer(this);
     connect(queueTimer, &QTimer::timeout, this, &MainWindow::process_queue);
-    //queueTimer->start(200);
+    queueTimer->start(200);
 
     stackedWidget = new QStackedWidget(this);
     stackedWidget->setStyleSheet("QStackedWidget {background-color: #a6e1ff;}");
@@ -142,7 +140,7 @@ MainWindow::MainWindow(QWidget *parent)
     tableWidget->verticalHeader()->setStyleSheet("QHeaderView::section { background-color: #4a4a4a; color: white; padding: 5px; border: 1px solid #5d5d5d; }");
 
 
-    //Add a row
+    //Add a row for fake data
     int row = tableWidget->rowCount();
     tableWidget->insertRow(row);
     tableWidget->setItem(row, 0, new QTableWidgetItem("Rover 1"));
@@ -202,22 +200,8 @@ void MainWindow::on_scanBtn_clicked(){
     }
     resultsLayout->addWidget(timeLabel);
 
-    //manager->add_to_queue("192.168.1.50", 123);
-
     start_motor();
     qDebug() << "start motor and thus auto scan";
-    //motor_running = true;
-    //std::cout << "AUTO MODE STARTED" << std::endl;
-    //std::thread autoThread(&Manager::start_auto_mode, manager);
-    //autoThread.detach();
-     //try{
-//    std::thread autoThread(&Manager::start_auto_mode, manager.get());
-  //  autoThread.detach();
-   //     std::cout << "AUTO MODE STARTED" << std::endl;
-     //   manager->start_auto_mode();
-    //} catch (const std::exception& e){
-      //  std::cerr<<"Error starting auto mode"<<e.what()<<std::endl;
-    //} 
 
     qDebug() << "current time: "<< timeString;
     qDebug() << "stacked pointer:" << stackedWidget;
@@ -253,8 +237,6 @@ void MainWindow::on_targetBtn_clicked(){
 }
 void MainWindow::start_motor(){
     try{
-      //  std::thread my_thread(manager->start_thread());
-       // my_thread.detach();
        manager->start_thread();
     } catch (const std::exception& e){
         std::cerr<<"Error starting motor control loop"<<e.what()<<std::endl;
@@ -267,7 +249,7 @@ void MainWindow::stop_motor(){
 void MainWindow::process_queue(){
     qDebug() << "steaming rice";
     qDebug() << "queue empty?" << manager->is_queue_empty();
-    if (!manager->is_queue_empty()){
+    while (!manager->is_queue_empty()){
         auto [ip, heading] = manager->get_from_queue();
         QString QIp = QString::fromStdString(ip);
         QString Qheading = QString::number(heading);
@@ -296,11 +278,6 @@ void MainWindow::target_rover(){
 
 
 }
-
-//void MainWindow::on_autoScanBtn_clicked(){
-  //  start_motor();
-   // queueTimer->start(200); //RUN every 200 ms
-//}
 
 void MainWindow::on_stopBtn_clicked(){
     qDebug() << "Stop button clicked";
